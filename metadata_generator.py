@@ -24,7 +24,7 @@ def generate_metadata_from_filenames(wav_dir, output_csv):
             transcript = clean_text_from_filename(wav_file)  # "hey me see you"
             writer.writerow([wav_id, transcript])
 
-    print(f"✅ Generated metadata.csv with {len(wav_files)} entries from filenames.")
+    print(f"Generated metadata.csv with {len(wav_files)} entries from filenames.")
 
 if __name__ == "__main__":
     generate_metadata_from_filenames(WAV_DIR, OUTPUT_CSV)

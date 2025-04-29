@@ -3,7 +3,7 @@
 import subprocess
 from pathlib import Path
 
-# Change these paths to wherever your stuff is
+
 PIPER_BIN = "piper"
 MODEL_PATH = "./cursed_furby/furby_finetuned.onnx"
 OUTPUT_DIR = "./cursed_furby/furby_outputs"

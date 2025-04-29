@@ -3,7 +3,7 @@
 import os
 import csv
 
-# Set these paths
+
 WAV_DIR = "./FurbSounds"            
 OUTPUT_CSV = "./metadata.csv" 
 
@@ -20,7 +20,7 @@ def generate_metadata_from_filenames(wav_dir, output_csv):
     with open(output_csv, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f, delimiter='|')
         for wav_file in wav_files:
-            wav_id = os.path.splitext(wav_file)[0]  # e.g., hey_me_see_you
+            wav_id = os.path.splitext(wav_file)[0]  #  hey_me_see_you
             transcript = clean_text_from_filename(wav_file)  # "hey me see you"
             writer.writerow([wav_id, transcript])
 

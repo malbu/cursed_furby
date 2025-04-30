@@ -37,6 +37,7 @@ INPUT_DEVICE_NAME_SUBSTRING = "ReSpeaker"
 # Fun Furby catchphrases
 FURBY_PHRASES = [
     "Me happy happy!",
+    "Snack time?",
 ]
 
 # Initial personality prompt
@@ -123,7 +124,7 @@ def ask_llama(query, context):
 def rag_ask(query):
     context = " ".join(db.search(query)) if USE_EMBEDDINGS else ""
     answer = ask_llama(query, context)
-    if random.random() < 0.4:  # 40% chance to Furby-ify
+    if random.random() < 0.1:  # 10% chance to Furby-ify
         if random.random() < 0.5:
             answer = random.choice(FURBY_PHRASES) + " " + answer
         else:

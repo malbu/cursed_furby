@@ -153,20 +153,27 @@ def start_llama_server():
         "--gpu-layers", gpu_layers
     ])
 
-    # wait until the server is actually responding
-    for attempt in range(20):  # max ~10 seconds
+    # wait up to 60 seconds for the server to come up
+    timeout_seconds = 60
+    sleep_interval = 2
+    elapsed = 0
+
+    while elapsed < timeout_seconds:
         try:
             response = requests.post(
                 "http://127.0.0.1:5000/completion",
                 json={"prompt": "ping", "max_tokens": 1},
-                timeout=1,
+                timeout=2,
                 headers={'Content-Type': 'application/json'}
             )
             if response.status_code == 200:
                 print("llama-server is ready!")
                 return proc
         except requests.exceptions.RequestException:
-            time.sleep(0.5)
+            pass
+        print(f"Waiting for llama-server... ({elapsed}s)")
+        time.sleep(sleep_interval)
+        elapsed += sleep_interval
 
     print("Error: llama-server did not start in time.")
     proc.terminate()

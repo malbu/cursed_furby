@@ -12,6 +12,9 @@ import subprocess
 import time
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="whisper")
+
 
 
 USE_EMBEDDINGS = False  # Disabled for now
@@ -155,7 +158,7 @@ def start_llama_server():
 
     # wait up to 60 seconds for the server to come up
     timeout_seconds = 60
-    sleep_interval = 2
+    sleep_interval = 10
     elapsed = 0
 
     while elapsed < timeout_seconds:

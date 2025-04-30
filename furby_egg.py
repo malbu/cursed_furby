@@ -8,6 +8,8 @@ import sounddevice as sd
 import numpy as np
 import faiss
 import random
+import subprocess
+import time
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 
@@ -47,7 +49,7 @@ DOCS = [
 
 # ====================================
 
-# Load models
+# load models
 if USE_EMBEDDINGS:
     embedding_model = SentenceTransformer(EMBEDDING_MODEL_PATH)
 whisper_model = whisper.load_model(WHISPER_MODEL)
@@ -128,6 +130,47 @@ def text_to_speech(text):
     command = f'echo "{text}" | /home/malbu/piper/build/piper --model {FURBY_MODEL} --output_file response.wav && aplay response.wav'
     os.system(command)
 
+def start_llama_server():
+    llama_binary = "/home/malbu/llama.cpp/build/bin/llama-server"
+    model_path = "/home/malbu/llama.cpp/models/gemma-2-2b-it-Q4_K_S.gguf"
+    port = "5000"
+    threads = "4"
+    context_size = "1024"
+    gpu_layers = "30"
+
+    if not Path(llama_binary).exists():
+        print("Error: llama-server binary not found!")
+        return None
+
+    print("Launching llama-server in background...")
+
+    proc = subprocess.Popen([
+        llama_binary,
+        "-m", model_path,
+        "--port", port,
+        "-t", threads,
+        "-c", context_size,
+        "--gpu-layers", gpu_layers
+    ])
+
+    # wait until the server is actually responding
+    for attempt in range(20):  # max ~10 seconds
+        try:
+            response = requests.post(
+                "http://127.0.0.1:5000/completion",
+                json={"prompt": "ping", "max_tokens": 1},
+                timeout=1,
+                headers={'Content-Type': 'application/json'}
+            )
+            if response.status_code == 200:
+                print("llama-server is ready!")
+                return proc
+        except requests.exceptions.RequestException:
+            time.sleep(0.5)
+
+    print("Error: llama-server did not start in time.")
+    proc.terminate()
+    return None
 
 def main():
     while True:
@@ -147,4 +190,12 @@ def main():
             print(f"Error: {e}")
 
 if __name__ == "__main__":
-    main()
+    llama_proc = start_llama_server()
+    if not llama_proc:
+        print("Furby cannot speak without its brain (llama-server)!")
+        exit(1)
+    try:
+        main()
+    finally:
+        print("Shutting down llama-server...")
+        llama_proc.terminate()

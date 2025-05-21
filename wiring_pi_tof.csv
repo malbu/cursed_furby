@@ -1,0 +1,5 @@
+VL53L4CX Pin,Raspberry Pi Pin,Description
+VIN,Pin 1 (3.3V),Power
+GND,Pin 6,Ground
+SDA,Pin 3 (GPIO2),I2C data
+SCL,Pin 5 (GPIO3),I2C clock

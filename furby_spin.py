@@ -23,4 +23,5 @@ try:
 
 finally:
     pwm.stop()
+    del pwm
     GPIO.cleanup()

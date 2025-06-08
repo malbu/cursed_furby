@@ -13,7 +13,7 @@ try:
     print("Forward")
     GPIO.output(IN1, GPIO.HIGH)
     GPIO.output(IN2, GPIO.LOW)
-    pwm.ChangeDutyCycle(80)  # ~80 % speed
+    pwm.ChangeDutyCycle(100)  
     sleep(5)
 
     print("Reverse")
@@ -22,5 +22,5 @@ try:
     sleep(5)
 
 finally:
-    pwm.stop(0)
+    pwm.stop()
     GPIO.cleanup()

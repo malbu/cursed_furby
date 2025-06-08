@@ -14,13 +14,13 @@ try:
     GPIO.output(IN1, GPIO.HIGH)
     GPIO.output(IN2, GPIO.LOW)
     pwm.ChangeDutyCycle(80)  # ~80 % speed
-    sleep(2)
+    sleep(5)
 
     print("Reverse")
     GPIO.output(IN1, GPIO.LOW)
     GPIO.output(IN2, GPIO.HIGH)
-    sleep(2)
+    sleep(5)
 
 finally:
-    pwm.ChangeDutyCycle(0)
+    pwm.stop(0)
     GPIO.cleanup()

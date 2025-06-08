@@ -6,7 +6,7 @@ IN1, IN2, ENA = 27, 22, 13
 GPIO.setmode(GPIO.BCM)
 GPIO.setup([IN1, IN2, ENA], GPIO.OUT)
 
-pwm = GPIO.PWM(ENA, 20000)  
+pwm = GPIO.PWM(ENA, 5000)  
 pwm.start(0)                
 
 try:

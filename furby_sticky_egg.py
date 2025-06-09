@@ -19,249 +19,255 @@ from sentence_transformers import SentenceTransformer
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="whisper")
 
+# ------------------------------------------------------------------
+# Configuration
+# ------------------------------------------------------------------
 
-# Configuration 
-
-USE_EMBEDDINGS = False  # Disabled for now; set True to enable RAG embeddings
+USE_EMBEDDINGS = False  # set True to enable RAG embeddings
 
 FURBY_MODEL = "/usr/local/share/piper/models/furby_finetuned.onnx"
-LLAMA_URL = "http://127.0.0.1:5000/completion"
+LLAMA_URL = "http://127.0.0.1:5000"  
 
-EMBEDDING_MODEL_PATH = ""  
+EMBEDDING_MODEL_PATH = ""
 WHISPER_MODEL = "tiny"
 
 RECORD_DURATION = 5  # seconds
 SAMPLE_RATE = 16000  # Hz
 INPUT_DEVICE_NAME_SUBSTRING = "ReSpeaker"
 
-# Fun Furby catchphrases
+# Fun Furby catch‑phrases
 FURBY_PHRASES = [
     "Me happy happy!",
     "Snack time?",
 ]
 
-# Persona / system prompt (sent only once thanks to sticky session)
-INITIAL_PROMPT = (
+# Persona text 
+PERSONA_TEXT = (
     "You are a Furby — a cheerful, fluffy creature who only speaks in short, playful, childlike sentences. "
     "Never break character. Do not use markdown, asterisks, or describe physical actions. "
     "Just talk like a silly, happy Furby. Don't say 'continue the conversation' or act like an assistant. "
     "Always stay in character."
 )
+PERSONA_TOKENS = 100  
 
-# Documents for RAG
+# Documents for RAG 
 DOCS = [
     "Furbies are fluffy, playful creatures who love to talk, sing, dance, and snack. They are curious about everything!",
 ]
 
+# ------------------------------------------------------------------
 # Model loading
+# ------------------------------------------------------------------
 
 if USE_EMBEDDINGS:
     embedding_model = SentenceTransformer(EMBEDDING_MODEL_PATH)
 whisper_model = whisper.load_model(WHISPER_MODEL)
 
-#  Vector DB 
+# Vector DB wrapper --------------------------------------------------
 
 class VectorDatabase:
-    def __init__(self, dim):
+    def __init__(self, dim: int):
         self.index = faiss.IndexFlatL2(dim)
-        self.documents = []
+        self.documents: list[str] = []
 
-    def add_documents(self, docs):
+    def add_documents(self, docs: list[str]):
         if USE_EMBEDDINGS:
             embeddings = embedding_model.encode(docs)
             self.index.add(np.array(embeddings, dtype=np.float32))
             self.documents.extend(docs)
 
-    def search(self, query, top_k=3):
+    def search(self, query: str, top_k: int = 3) -> list[str]:
         if USE_EMBEDDINGS:
-            query_embedding = embedding_model.encode([query])[0].astype(np.float32)
-            distances, indices = self.index.search(np.array([query_embedding]), top_k)
-            return [self.documents[i] for i in indices[0]]
-        else:
-            return []
+            q_emb = embedding_model.encode([query])[0].astype(np.float32)
+            dists, idxs = self.index.search(np.array([q_emb]), top_k)
+            return [self.documents[i] for i in idxs[0]]
+        return []
 
-# Instantiate and populate DB
-DB_DIM = 384  # default dimension for most MiniLM-size ST models
-vector_db = VectorDatabase(dim=DB_DIM)
+DB_DIM = 384  # MiniLM default
+vector_db = VectorDatabase(DB_DIM)
 vector_db.add_documents(DOCS)
 
-#Audio helpers
+# ------------------------------------------------------------------
+# Audio helpers
+# ------------------------------------------------------------------
 
-def find_device(device_name_substring):
-    for i, device in enumerate(sd.query_devices()):
-        if device_name_substring.lower() in device['name'].lower():
+def find_device(name_sub: str) -> int:
+    for i, dev in enumerate(sd.query_devices()):
+        if name_sub.lower() in dev['name'].lower():
             return i
-    raise ValueError(f"Device with name containing '{device_name_substring}' not found.")
+    raise ValueError(f"Audio device containing '{name_sub}' not found")
 
-
-def record_audio(filename, duration=RECORD_DURATION, fs=SAMPLE_RATE):
+def record_audio(path: str, duration: int = RECORD_DURATION, fs: int = SAMPLE_RATE):
     sd.default.device = find_device(INPUT_DEVICE_NAME_SUBSTRING)
-    print("Recording...")
+    print("Recording…")
     audio = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='int16')
     sd.wait()
     print("Done recording!")
-    with wave.open(filename, 'wb') as wf:
+    with wave.open(path, 'wb') as wf:
         wf.setnchannels(1)
         wf.setsampwidth(2)
         wf.setframerate(fs)
         wf.writeframes(audio.tobytes())
 
 
-def transcribe_audio(filename):
-    return whisper_model.transcribe(filename, language="en")['text']
+def transcribe_audio(path: str) -> str:
+    return whisper_model.transcribe(path, language="en")['text']
 
-#  Sticky-session LLama wrapper
+# ------------------------------------------------------------------
+# Sticky‑session wrapper
+# ------------------------------------------------------------------
 
-SESSION_ID = uuid.uuid4().hex  # unique conversation ID
-_first_prompt_sent = False      # module-level flag
+SESSION_ID = uuid.uuid4().hex  # unique chat id
+_last_user: str | None = None
+_last_assistant: str | None = None
 
+# Clean‑up helper -----------------------------------------------------
 
 def _clean_output(text: str) -> str:
-    """Strip simple markdown or role-play action markers from LLM output."""
-    # remove *action* blocks
-    text = re.sub(r"\*[^\*]+\*", '', text)
-    # strip markdown special characters
-    text = re.sub(r"[\_\~`#>\[\]]", '', text)
-    # collapse multiple spaces
-    text = re.sub(r'\s{2,}', ' ', text)
+    text = re.sub(r'\*[^\*]+\*', '', text)  # remove *actions*
+    text = re.sub(r"[\_\~`#>\[\]]", '', text)  # strip markdown
+    text = re.sub(r"\s{2,}", ' ', text)
     return text.strip()
 
 
-def ask_llama(user_query: str, context: str):
-    """Send a prompt to llama-server using a sticky session."""
-    global _first_prompt_sent
+def ask_llama(user_msg: str, context: str) -> str:
+    """Send prompt to llama‑server, maintaining sticky KV cache."""
+    global _last_user, _last_assistant
 
-    # Build the prompt depending on whether we've already sent the persona
-    prompt_parts = []
-    if not _first_prompt_sent:
-        prompt_parts.append(INITIAL_PROMPT)
+    prompt_parts: list[str] = [PERSONA_TEXT]
+
+    # replay previous turn so the prefix matches the cache
+    if _last_user:
+        prompt_parts.append(_last_user)
+    if _last_assistant:
+        prompt_parts.append(_last_assistant)
+
     if context:
         prompt_parts.append(f"Context: {context}")
-    prompt_parts.append(f"Human: {user_query}")
+
+    prompt_parts.append(f"Human: {user_msg}")
     prompt_parts.append("Furby:")
     prompt = "\n".join(prompt_parts)
 
     data = {
         "prompt": prompt,
+        "session_id": SESSION_ID,
+        "n_keep": PERSONA_TOKENS,  # pin persona forever
         "max_tokens": 80,
         "temperature": 0.7,
-        "session_id": SESSION_ID,
-        "n_keep": -1, 
     }
 
     try:
-        response = requests.post(LLAMA_URL, json=data, headers={'Content-Type': 'application/json'})
-        _first_prompt_sent = True  # Mark that we've sent the persona
-        if response.status_code == 200:
-            return response.json().get('content', '').strip()
-        else:
-            return f"Error: {response.status_code}"
+        r = requests.post(f"{LLAMA_URL}/completion", json=data, timeout=120)
+        r.raise_for_status()
+        raw_answer = r.json().get("content", "")
     except requests.exceptions.RequestException as exc:
-        return f"Error contacting llama-server: {exc}"
+        return f"Error contacting llama‑server: {exc}"
 
+    answer = _clean_output(raw_answer)
 
-# RAG wrapper with Furby-ification 
+    # update rolling memory after cleaning so cache prefix matches
+    _last_user = f"Human: {user_msg}"
+    _last_assistant = f"Furby: {answer}" if answer else None
 
-def rag_ask(query):
-    context = " ".join(vector_db.search(query)) if USE_EMBEDDINGS else ""
-    answer = ask_llama(query, context)
-    answer = _clean_output(answer)  # Safety filter
-
-    # 10% chance to add a Furby catchphrase
-    if random.random() < 0.1 and answer:
-        if random.random() < 0.5:
-            answer = random.choice(FURBY_PHRASES) + " " + answer
-        else:
-            answer = answer + " " + random.choice(FURBY_PHRASES)
     return answer
 
+# ------------------------------------------------------------------
+# RAG wrapper & Furby‑ification
+# ------------------------------------------------------------------
 
+def rag_ask(query: str) -> str:
+    context = " ".join(vector_db.search(query)) if USE_EMBEDDINGS else ""
+    response = ask_llama(query, context)
 
-def text_to_speech(text):
-    command = (
-        f'echo "{text}" | /home/malbu/piper/build/piper '
-        f'--model {FURBY_MODEL} --output_file response.wav && aplay response.wav'
+    if random.random() < 0.1 and response:
+        if random.random() < 0.5:
+            response = random.choice(FURBY_PHRASES) + " " + response
+        else:
+            response = response + " " + random.choice(FURBY_PHRASES)
+    return response
+
+# ------------------------------------------------------------------
+# TTS helper (quote‑safe)
+# ------------------------------------------------------------------
+
+def text_to_speech(text: str):
+    # write to temp file to avoid shell‑quote issues
+    with tempfile.NamedTemporaryFile("w", delete=False) as tf:
+        tf.write(text)
+        tf_path = tf.name
+    os.system(
+        f"cat {tf_path} | /home/malbu/piper/build/piper --model {FURBY_MODEL} --output_file response.wav && aplay response.wav"
     )
-    os.system(command)
+    os.unlink(tf_path)
 
-# LLama-server launch helper
+# ------------------------------------------------------------------
+# Llama‑server launch helper
+# ------------------------------------------------------------------
+
 def start_llama_server():
-    llama_binary = "/home/malbu/llama.cpp/build/bin/llama-server"
+    llama_bin = "/home/malbu/llama.cpp/build/bin/llama-server"
     model_path = "/home/malbu/llama.cpp/models/gemma-2-2b-it-Q4_K_S.gguf"
-    port = "5000"
-    threads = "4"
-    context_size = "1024"
-    gpu_layers = "30"
-
-    if not Path(llama_binary).exists():
+    if not Path(llama_bin).exists():
         print("Error: llama-server binary not found!")
         return None
 
-    print("Launching llama-server in background...")
-
     proc = subprocess.Popen([
-        llama_binary,
+        llama_bin,
         "-m", model_path,
-        "--port", port,
-        "-t", threads,
-        "-c", context_size,
-        "--gpu-layers", gpu_layers
+        "--port", "5000",
+        "-t", "4",
+        "-c", "1024",
+        "--gpu-layers", "30",
     ])
 
-    # Wait until the server is responsive (up to 60 s)
-    timeout_seconds = 60
-    sleep_interval = 10
-    elapsed = 0
-
-    while elapsed < timeout_seconds:
+    # wait until responsive
+    for waited in range(0, 60, 5):
         try:
             ping = requests.post(
-                LLAMA_URL,
+                f"{LLAMA_URL}/completion",
                 json={"prompt": "ping", "max_tokens": 1, "session_id": SESSION_ID},
                 timeout=2,
-                headers={'Content-Type': 'application/json'}
             )
             if ping.status_code == 200:
-                print("llama-server is ready!")
+                print("llama‑server is ready!")
                 return proc
         except requests.exceptions.RequestException:
             pass
-        print(f"Waiting for llama-server... ({elapsed}s)")
-        time.sleep(sleep_interval)
-        elapsed += sleep_interval
+        print(f"Waiting for llama-server… ({waited}s)")
+        time.sleep(5)
 
     print("Error: llama-server did not start in time.")
     proc.terminate()
     return None
 
-
+# ------------------------------------------------------------------
+# Main loop
+# ------------------------------------------------------------------
 
 def main():
     while True:
         try:
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmpfile:
-                record_audio(tmpfile.name)
-                transcribed_text = transcribe_audio(tmpfile.name)
-                print(f"Furby heard: {transcribed_text}")
-                if transcribed_text.strip():
-                    response = rag_ask(transcribed_text)
-                    print(f"Furby says: {response}")
-                    text_to_speech(response)
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+                record_audio(tmp.name)
+                heard = transcribe_audio(tmp.name)
+                print(f"Furby heard: {heard}")
+                if heard.strip():
+                    reply = rag_ask(heard)
+                    print(f"Furby says: {reply}")
+                    text_to_speech(reply)
         except KeyboardInterrupt:
             print("\nFurby says bye bye!")
             break
         except Exception as e:
             print(f"Error: {e}")
 
-
-
 if __name__ == "__main__":
     llama_proc = start_llama_server()
     if not llama_proc:
-        print("Furby cannot speak without its brain (llama-server)!")
         exit(1)
     try:
         main()
     finally:
-        print("Shutting down llama-server...")
+        print("Shutting down llama-server…")
         llama_proc.terminate()

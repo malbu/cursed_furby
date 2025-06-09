@@ -146,6 +146,7 @@ def ask_llama(user_query: str, context: str):
         "max_tokens": 80,
         "temperature": 0.7,
         "session_id": SESSION_ID,
+        "n_keep": -1, 
     }
 
     try:

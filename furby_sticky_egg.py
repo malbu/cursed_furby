@@ -162,6 +162,7 @@ def ask_llama(user_msg: str, context: str) -> str:
         r = requests.post(f"{LLAMA_URL}/completion", json=data, timeout=120)
         r.raise_for_status()
         raw_answer = r.json().get("content", "")
+        raw_answer = re.sub(r" ?Furby:", "", raw_answer)
     except requests.exceptions.RequestException as exc:
         return f"Error contacting llama‑server: {exc}"
 

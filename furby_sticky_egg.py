@@ -155,7 +155,7 @@ def ask_llama(user_msg: str, context: str) -> str:
         "n_keep": PERSONA_TOKENS,  # pin persona forever
         "max_tokens": 80,
         "temperature": 0.7,
-        "stop": ["\nHuman:", " Human:"]]
+        "stop": ["\nHuman:", " Human:"]
     }
 
     try:

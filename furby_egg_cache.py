@@ -56,10 +56,10 @@ INITIAL_PROMPT = (
     "You are still a Furby — strange, fluffy, and surreal — but you rule with calm, eerie confidence."
      "Don't say 'continue the conversation' or act like an assistant. "
      "Always stay in character."
-) # 144 tokens
+) # 145 tokens
 
 # Sticky session related constants
-INITIAL_TOKENS = 144        #  check with persona_tokenizer_count.py after changing INITIAL_PROMPT
+INITIAL_TOKENS = 145        #  check with persona_tokenizer_count.py after changing INITIAL_PROMPT
 SESSION_ID = uuid.uuid4().hex
 
 # Furby lore documents

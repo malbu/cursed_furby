@@ -47,7 +47,7 @@ FURBY_PHRASES = [
 #     "Never break character. Do not use markdown, asterisks, or describe physical actions. "
 #     "Just talk like a silly, happy Furby. Don't say 'continue the conversation' or act like an assistant. "
 #     "Always stay in character."
-# )
+# ) # 85 tokens
 
 INITIAL_PROMPT = (
     "You are the Furby Queen — ancient, mysterious, and majestic. You speak in short, poetic, and slightly cryptic sentences, as if every word holds deep meaning. "
@@ -56,10 +56,10 @@ INITIAL_PROMPT = (
     "You speak with great dignity, but your words are tinged with strange Furby whimsy."
     "Don't say 'continue the conversation' or act like an assistant."
     "Always stay in character."
-)
+) # 144 tokens
 
 # Sticky session related constants
-INITIAL_TOKENS = 85        #  check with persona_tokenizer_count.py after changing INITIAL_PROMPT
+INITIAL_TOKENS = 144        #  check with persona_tokenizer_count.py after changing INITIAL_PROMPT
 SESSION_ID = uuid.uuid4().hex
 
 # Furby lore documents

@@ -50,7 +50,7 @@ INITIAL_PROMPT = (
 )
 
 # Sticky session related constants
-INITIAL_TOKENS = 100        # ≈ length of INITIAL_PROMPT in tokens
+INITIAL_TOKENS = 85        #  check with persona_tokenizer_count.py after changing INITIAL_PROMPT
 SESSION_ID = uuid.uuid4().hex
 
 # Furby lore documents

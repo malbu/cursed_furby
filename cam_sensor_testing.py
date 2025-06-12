@@ -1,5 +1,5 @@
 import RPi.GPIO as GPIO, time
-GEAR = 18; HOME = 23; LED_EN = None  # LED always on 
+GEAR = 18; HOME = 23; 
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup([GEAR, HOME], GPIO.IN, pull_up_down=GPIO.PUD_UP)

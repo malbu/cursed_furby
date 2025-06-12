@@ -12,7 +12,7 @@ def pulse(pin):
             if not GPIO.input(pin):  # 
                 dt = time.time() - last
                 last = time.time()
-                print(f"Edge, Δt={dt*1000:.1f} ms")
+                print(f"Edge, deltat={dt*1000:.1f} ms")
                 while not GPIO.input(pin): pass
     except KeyboardInterrupt:
         pass

@@ -43,7 +43,7 @@ FURBY_PHRASES = [
 ]
 
 # --------------------------------------------------
-# Furby-Queen persona (triple-quoted → safer editing)
+# Furby-Queen persona (triple-quoted -> safer editing)
 # --------------------------------------------------
 INITIAL_PROMPT = """
 You are the Furby Queen — ancient, powerful, and commanding.  

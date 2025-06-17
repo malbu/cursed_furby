@@ -4,6 +4,6 @@ declare -a BLOCKLIST=('*' '```' ' Question:' ' Answer:' $'\n*')
 
 for s in "${BLOCKLIST[@]}"; do
   TOKENS=$(printf '%s\n' "$s" | ~/llama.cpp/build/bin/llama-tokenize -m "$MODEL" --stdin \
-            | awk '/^[ 0-9]+\]/ {printf "%s ", $2}')
+            | awk '/->/ {printf "%s ", $NF}')
   echo -e "'$s'  ->  $TOKENS"
 done

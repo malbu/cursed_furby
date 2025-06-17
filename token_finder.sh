@@ -3,7 +3,7 @@ MODEL=~/llama.cpp/models/gemma-2-2b-it-Q4_K_S.gguf
 declare -a BLOCKLIST=('*' '```' ' Question:' ' Answer:' $'\n*')
 
 for s in "${BLOCKLIST[@]}"; do
-  TOKENS=$(printf '%s\n' "$s" | ~/llama.cpp/build/bin/llama-tokenize -m "$MODEL" \
+  TOKENS=$(printf '%s\n' "$s" | ~/llama.cpp/build/bin/llama-tokenize -m "$MODEL" --stdin \
             | awk '/^[ 0-9]+\]/ {printf "%s ", $2}')
   echo -e "'$s'  ->  $TOKENS"
 done

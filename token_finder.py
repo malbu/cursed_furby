@@ -7,7 +7,6 @@ llm = Llama(model_path=model_path, n_ctx=32, n_threads=2)
 # Any literal strings you never want the model to produce
 bad_words = [
     "*",  "#",  "```",  "**",
-    "\n*", "\n#",
     " *",  " #",        # leading space
 ]
 

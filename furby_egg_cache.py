@@ -14,6 +14,7 @@ from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import warnings
 import uuid
+import threading  # for safe lazy token computation
 warnings.filterwarnings("ignore", category=UserWarning, module="whisper")
 
 
@@ -60,7 +61,13 @@ Don't say 'continue the conversation' or act like an assistant. Always stay in c
 """.strip()
 
 # Sticky session related constants
-INITIAL_TOKENS = 145        #  check with persona_tokenizer_count.py after changing INITIAL_PROMPT
+# INITIAL_TOKENS is computed lazily via llama.cpp's /tokenize endpoint so there is
+# no need to update it manually after editing INITIAL_PROMPT.
+INITIAL_TOKENS = None  # will be filled by get_initial_tokens()
+
+# Lock guards INITIAL_TOKENS computation when called from multiple threads.
+tokenizer_lock = threading.Lock()
+
 SESSION_ID = uuid.uuid4().hex
 
 # Furby lore documents
@@ -122,6 +129,26 @@ def record_audio(filename, duration=RECORD_DURATION, fs=SAMPLE_RATE):
 def transcribe_audio(filename):
     return whisper_model.transcribe(filename, language="en")['text']
 
+
+def get_initial_tokens() -> int:
+    """Return (and cache) the token length of INITIAL_PROMPT via llama.cpp /tokenize."""
+    global INITIAL_TOKENS
+    with tokenizer_lock:
+        if INITIAL_TOKENS is None:
+            try:
+                # Derive base URL and hit /tokenize endpoint
+                tokenize_url = LLAMA_URL.replace("/completion", "/tokenize")
+                resp = requests.post(tokenize_url, json={"content": INITIAL_PROMPT}, timeout=5)
+                if resp.status_code == 200:
+                    INITIAL_TOKENS = len(resp.json().get("tokens", []))
+                else:
+                    warnings.warn("/tokenize unavailable – rough token estimate in use.")
+                    INITIAL_TOKENS = len(INITIAL_PROMPT.split())
+            except Exception:
+                # Fallback: rough estimate based on whitespace if endpoint unavailable
+                INITIAL_TOKENS = len(INITIAL_PROMPT.split())
+        return INITIAL_TOKENS
+
 # send query to LLaMA server
 def ask_llama(query, context):
     common_head = f"{INITIAL_PROMPT}\n"        
@@ -130,7 +157,7 @@ def ask_llama(query, context):
     data = {
         "prompt":     prompt,
         "session_id": SESSION_ID,               # sticky cache
-        "n_keep":     INITIAL_TOKENS,           # pin persona only
+        "n_keep":     get_initial_tokens(),     # pin persona only
         "max_tokens": 80,
         "temperature": 0.7,
     }
@@ -194,6 +221,8 @@ def start_llama_server():
             )
             if response.status_code == 200:
                 print("llama-server is ready!")
+                # Warm-up: compute persona token count once server is live
+                _ = get_initial_tokens()
                 return proc
         except requests.exceptions.RequestException:
             pass

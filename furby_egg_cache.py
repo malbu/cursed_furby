@@ -142,7 +142,7 @@ def get_initial_tokens() -> int:
                 if resp.status_code == 200:
                     INITIAL_TOKENS = len(resp.json().get("tokens", []))
                 else:
-                    warnings.warn("/tokenize unavailable – rough token estimate in use.")
+                    warnings.warn("/tokenize unavailable - rough token estimate in use.")
                     INITIAL_TOKENS = len(INITIAL_PROMPT.split())
             except Exception:
                 # Fallback: rough estimate based on whitespace if endpoint unavailable

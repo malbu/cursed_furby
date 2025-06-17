@@ -166,10 +166,9 @@ def ask_llama(query, context):
         # Penalize tokens that lead to markdown, formatting or unwanted characters
         
         "logit_bias": {
-            "235287":  -100,  # '*'
-            "235345":  -100,  # '#'
-            "1917": -100,  # '```' (code fence)
-            "688":  -100   # '**' (double asterisk)
+            "235287":  -1000,  # '*'
+            "235345":  -1000,  # '#'
+            "1917": -1000,  # '```' (code fence)
         },
     }
     response = requests.post(LLAMA_URL, json=data, headers={'Content-Type': 'application/json'})

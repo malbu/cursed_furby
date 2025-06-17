@@ -161,7 +161,16 @@ def ask_llama(query, context):
         "session_id": SESSION_ID,               # sticky cache
         "n_keep":     get_initial_tokens(),     # pin persona only
         "max_tokens": 80,
-        "temperature": 0.7,
+        "temperature": 0.35,
+        "top_p": 0.9,
+        # Penalize tokens that lead to markdown, formatting or unwanted characters
+        
+        "logit_bias": {
+            "235287":  -100,  # '*'
+            "235345":  -100,  # '#'
+            "1917": -100,  # '```' (code fence)
+            "688":  -100   # '**' (double asterisk)
+        },
     }
     response = requests.post(LLAMA_URL, json=data, headers={'Content-Type': 'application/json'})
     if response.status_code == 200:

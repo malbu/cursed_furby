@@ -55,6 +55,7 @@ try:
     run(False)
 
 finally:
-    pwm.stop()
+    pwm.stop()     # stop while the chip handle is still valid
+    del pwm        # force destructor to run now
     GPIO.cleanup()
     print("Test finished, GPIO released.")

@@ -30,7 +30,7 @@ def home_cb(ch):
 GPIO.add_event_detect(GEAR, GPIO.RISING,  callback=gear_cb,  bouncetime=1)
 GPIO.add_event_detect(HOME, GPIO.FALLING, callback=home_cb, bouncetime=5)
 
-def run(direction_high, seconds=5, duty=80):
+def run(direction_high, seconds=5, duty=100):
     global gear_cnt, home_cnt
     gear_cnt = home_cnt = 0
 

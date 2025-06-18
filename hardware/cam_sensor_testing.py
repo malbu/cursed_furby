@@ -10,8 +10,10 @@ GEAR  = 18        # TXS0102 A1 <- Furby Pin 22
 HOME  = 23        # TXS0102 A2 <- Furby Pin 23
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup([DIR1, DIR2, ENA], GPIO.OUT)
-GPIO.setup([GEAR, HOME], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+# GPIO.setup([DIR1, DIR2, ENA], GPIO.OUT)
+# GPIO.setup([GEAR, HOME], GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)   
+GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 pwm = GPIO.PWM(ENA, 5000)      # 5 kHz
 pwm.start(0)

@@ -26,6 +26,11 @@ vl53.start_ranging()
 
 
 while True:
-    distance_mm = vl53.distance
-    print(f"Distance: {distance_mm / 10:.1f} cm")
-    time.sleep(0.2)
+    if vl53.data_ready:
+        distance_cm = vl53.distance  # returns None when out of range
+        if distance_cm is not None:
+            print(f"Distance: {distance_cm:.1f} cm")
+        else:
+            print("Distance: --- (out of range)")
+        vl53.clear_interrupt()
+    time.sleep(0.1)

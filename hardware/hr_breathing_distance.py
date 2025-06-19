@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 PORT, BAUD = "/dev/ttyACM0", 115200
 
-PRINT_EVERY   = 1.0    # s between lines while locked
+PRINT_EVERY   = 0.5    # s between lines while locked
 UNLOCK_DELAY  = 3.0    # s of heart=0 before “unlock”
 delta_HEART, delta_BR = 3.0, 1.0
 

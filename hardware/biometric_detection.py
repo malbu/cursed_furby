@@ -9,7 +9,7 @@ PRINT_EVERY   = 1.0    # s between lines while locked
 UNLOCK_DELAY  = 3.0    # s of heart=0 before "unlock"
 delta_HEART, delta_BR = 3.0, 1.0
 #unlock / confidence parameters 
-DIST_UNLOCK_CM   = 160         # lean back threshold (don't unlock if torso still ≤160 cm)
+DIST_UNLOCK_CM   = 150         # lean back threshold (don't unlock if torso still ≤160 cm)
 FAR_CM           = 200         # consider far away/gone when distance > 200 cm
 UNLOCK_FRAMES    = 3           # need this many consecutive far+no-HR frames
 CONF_LOW_THRESH  = 100         # >100 cm -> confidence="low"

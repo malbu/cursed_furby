@@ -29,8 +29,8 @@ def home_cb(ch):
     global home_cnt
     home_cnt += 1
 
-GPIO.add_event_detect(23, GPIO.FALLING,  callback=gear_cb,  bouncetime=1)
-GPIO.add_event_detect(18, GPIO.FALLING,  callback=home_cb, bouncetime=5)
+GPIO.add_event_detect(GEAR, GPIO.FALLING, callback=gear_cb,  bouncetime=5)
+GPIO.add_event_detect(HOME, GPIO.RISING,  callback=home_cb, bouncetime=5)
 
 
 def run(direction_high, seconds=5, duty=100):

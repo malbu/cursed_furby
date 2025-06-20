@@ -19,7 +19,7 @@ pwm = GPIO.PWM(ENA, 5000)
 pwm.start(0)
 
 # For periodic status reporting
-next_status_time = time.time() + 0.1
+next_status_time = time.time() + 0.01
 
 def motor_forward(duty_cycle: int = 100):
     """Spin motor forward at the given duty-cycle (0-100 %)."""
@@ -45,7 +45,7 @@ try:
         # Periodically report the switch state every 0.5 s
         if time.time() >= next_status_time:
             print(f"Home switch: {'PRESSED' if GPIO.input(SWITCH_PIN) == GPIO.LOW else 'RELEASED'}")
-            next_status_time += 0.1
+            next_status_time += 0.01
         sleep(0.01)
     motor_stop()
     sleep(0.1)  
@@ -55,7 +55,7 @@ try:
         
         if time.time() >= next_status_time:
             print(f"Home switch: {'PRESSED' if GPIO.input(SWITCH_PIN) == GPIO.LOW else 'RELEASED'}")
-            next_status_time += 0.1
+            next_status_time += 0.01
 
         motor_forward()
         sleep(0.1)

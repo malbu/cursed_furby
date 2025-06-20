@@ -18,7 +18,7 @@ pwm = GPIO.PWM(ENA, 5000)
 pwm.start(0)
 
 
-def motor_forward(duty_cycle: int = 50):
+def motor_forward(duty_cycle: int = 100):
     """Spin motor forward at the given duty-cycle (0-100 %)."""
     GPIO.output(IN1, GPIO.HIGH)
     GPIO.output(IN2, GPIO.LOW)

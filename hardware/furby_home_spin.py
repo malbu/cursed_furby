@@ -18,7 +18,7 @@ pwm = GPIO.PWM(ENA, 5000)
 pwm.start(0)
 
 
-def motor_forward(duty_cycle: int = 10):
+def motor_forward(duty_cycle: int = 50):
     """Spin motor forward at the given duty-cycle (0-100 %)."""
     GPIO.output(IN1, GPIO.HIGH)
     GPIO.output(IN2, GPIO.LOW)
@@ -47,7 +47,7 @@ try:
     while GPIO.input(SWITCH_PIN) != home_state:
         
         motor_forward()
-        sleep(1)
+        sleep(0.1)
         
         motor_stop()
         for _ in range(int(2 / 0.01)):

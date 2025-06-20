@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 from time import sleep
+import time
 # using L298N driver with home-position switch support
 
 # Motor control pins (BCM numbering)
@@ -17,6 +18,8 @@ GPIO.setup(SWITCH_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # use internal pull-u
 pwm = GPIO.PWM(ENA, 5000)
 pwm.start(0)
 
+# For periodic status reporting
+next_status_time = time.time() + 0.1
 
 def motor_forward(duty_cycle: int = 100):
     """Spin motor forward at the given duty-cycle (0-100 %)."""
@@ -39,6 +42,10 @@ try:
     
     motor_forward()
     while GPIO.input(SWITCH_PIN) == home_state:
+        # Periodically report the switch state every 0.5 s
+        if time.time() >= next_status_time:
+            print(f"Home switch: {'PRESSED' if GPIO.input(SWITCH_PIN) == GPIO.LOW else 'RELEASED'}")
+            next_status_time += 0.1
         sleep(0.01)
     motor_stop()
     sleep(0.1)  
@@ -46,11 +53,18 @@ try:
    
     while GPIO.input(SWITCH_PIN) != home_state:
         
+        if time.time() >= next_status_time:
+            print(f"Home switch: {'PRESSED' if GPIO.input(SWITCH_PIN) == GPIO.LOW else 'RELEASED'}")
+            next_status_time += 0.1
+
         motor_forward()
         sleep(0.1)
         
         motor_stop()
         for _ in range(int(2 / 0.01)):
+            if time.time() >= next_status_time:
+                print(f"Home switch: {'PRESSED' if GPIO.input(SWITCH_PIN) == GPIO.LOW else 'RELEASED'}")
+                next_status_time += 0.5
             if GPIO.input(SWITCH_PIN) == home_state:
                 break
             sleep(0.01)

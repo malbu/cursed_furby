@@ -24,7 +24,7 @@ from time import sleep
 import RPi.GPIO as GPIO
 
 # ---------------------------  USER SETTINGS  --------------------------- #
-DUTY_CYCLE = 100   # % PWM duty while the motor is ON
+DUTY_CYCLE = 60   # % PWM duty while the motor is ON
 STEP_MS     = 50   # motor-ON burst length (milliseconds)
 PAUSE_MS    = 800  # observation pause after each burst (milliseconds)
 PWM_FREQ    = 5000 # Hz on ENA pin

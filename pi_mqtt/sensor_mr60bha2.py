@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 log = logging.getLogger("sensor")
 
-# Match same verbose strings as the legacy script
+# match same verbose strings as test script
 RX_HEART  = re.compile(r"heart rate'.*?state\s+([\d\.]+)", re.I)
 RX_BREATH = re.compile(r"respiratory rate'.*?state\s+([\d\.]+)", re.I)
 RX_DIST   = re.compile(r"distance to detection object'.*?state\s+([\d\.]+)", re.I)
@@ -15,14 +15,14 @@ DELTA_BR     = 1.0   # rpm
 
 PORT, BAUD = "/dev/ttyACM0", 115200
 
-# helpers ------------------------------------------------------
+# helpers
 iso8601 = lambda ts: datetime.fromtimestamp(ts, tz=timezone.utc).isoformat(timespec="seconds")
 
 def mov_avg(prev, cur):
     return cur if prev is None else (prev + cur) / 2.0
 
 class SensorTask:
-    """Reads MR60BHA2 serial lines and puts JSON payloads into an asyncio.Queue."""
+    """Reads MR60BHA2 serial lines and puts JSON payloads into an asyncio.Queue"""
 
     def __init__(self, queue: asyncio.Queue):
         self.queue = queue
@@ -43,7 +43,7 @@ class SensorTask:
             got = False
             now = time.time()
 
-            # Parse metrics --------------------------------------------------
+            # Parse metrics
             if m := RX_HEART.search(txt):
                 heart = float(m.group(1))
                 got = True

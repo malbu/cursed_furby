@@ -14,13 +14,13 @@ class Motor:
         self.stop()
 
     def start(self):
-        log.debug("Motor start")
+        log.info("Motor start")
         self.pi.write(IN1, 1)
         self.pi.write(IN2, 0)
         self.pi.set_PWM_dutycycle(ENA, self.duty)
 
     def stop(self):
-        log.debug("Motor stop")
+        log.info("Motor stop")
         self.pi.set_PWM_dutycycle(ENA, 0)
         self.pi.write(IN1, 0)
         self.pi.write(IN2, 0)

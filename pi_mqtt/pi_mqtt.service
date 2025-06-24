@@ -7,7 +7,6 @@ Type=simple
 WorkingDirectory=/home/malbu/cursed_furby
 ExecStart=/home/malbu/furby_controls-env/bin/python -m pi_mqtt
 Restart=always
-# Add PYTHONPATH so “-m pi_mqtt” finds the package
 Environment=PYTHONPATH=/home/malbu/cursed_furby
 
 [Install]

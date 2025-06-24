@@ -1,4 +1,5 @@
-import asyncio, logging, paho.mqtt as mqtt
+import asyncio, logging
+import paho.mqtt.client as mqtt
 from .motor import Motor
 
 log = logging.getLogger("mqtt_client")

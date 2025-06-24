@@ -1,0 +1,13 @@
+[Unit]
+Description=Cursed Furby
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/malbu/cursed_furby
+ExecStart=/home/malbu/furby_env/bin/python furby_egg_connected.py
+Restart=always
+Environment=PYTHONPATH=/home/malbu/cursed_furby
+
+[Install]
+WantedBy=default.target

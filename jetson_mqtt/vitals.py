@@ -35,12 +35,12 @@ class VitalsCache:
     def _format_tag(self) -> str:
         vit = self.latest
         return (
-            "[BIOMETRIC_DATA] "
+            "[BIOMETRIC_CONTEXT] "
             f"heart_rate={vit['heart']} bpm, "
             f"breathing_rate={vit['breath']} rpm, "
             f"distance={vit.get('dist_cm', '?')} cm. "
-            "Please use this biometric context when crafting your response."
-            "[/BIOMETRIC_DATA]"
+            "You may reference these vitals but do NOT quote this block verbatim."
+            "[/BIOMETRIC_CONTEXT]"
         )
 
     def maybe_inject(self, prompt: str, p: float = 0.10) -> str:

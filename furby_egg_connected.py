@@ -7,11 +7,13 @@ import wave
 import whisper
 import requests
 import sounddevice as sd
+import simpleaudio as sa
 import numpy as np
 import faiss
 import random
 import subprocess
 import time
+import json, asyncio, logging
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 import warnings
@@ -208,15 +210,30 @@ def rag_ask(query):
 
 # convert text to speech using Furby Piper voice
 def text_to_speech(text):
-    """synthesize speech and move the beak by publishing MQTT start/stop"""
-    command = (
-        f'echo "{text}" | '
-        f'/home/malbu/piper/build/piper --model {FURBY_MODEL} '
-        f'--output_file response.wav && aplay response.wav'
-    )
-    # wrap playback so the Pi spins the motor only while audio is audible
-    with motor_context():
-        os.system(command)
+    """
+    synthesize speech and keep the beak motor moving only
+    while audible sound leaves the speaker
+
+    enter motor_context() after the first PCM buffer is queued,
+        eliminating the variable buffering delay that `aplay` introduced
+    """
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as wav_tmp:
+        
+        piper_cmd = [
+            "/home/malbu/piper/build/piper",
+            "--model", FURBY_MODEL,
+            "--output_file", wav_tmp.name,
+        ]
+        # feed text via stdin
+        subprocess.run(piper_cmd, input=text.encode(), check=True)
+
+    
+    wave_obj = sa.WaveObject.from_wave_file(wav_tmp.name)
+
+    #  publish motor cues via MQTT to Jetson
+    with motor_context():                 # "start" published inside
+        play_obj = wave_obj.play()        # first buffer queued now
+        play_obj.wait_done()              # block until playback ends
 
 def start_llama_server():
     llama_binary = "/home/malbu/llama.cpp/build/bin/llama-server"

@@ -278,7 +278,7 @@ def main():
                 # print(f"Furby heard: {transcribed_text}")
                 # if transcribed_text.strip():
                 raw = transcribe_audio(tmpfile.name)
-                transcribed_text = VITALS.maybe_inject(raw, p=0.10)
+                transcribed_text = VITALS.maybe_inject(raw, p=0.80)
                 print(f"Furby heard: {raw}")
                 if transcribed_text.strip():
                     response = rag_ask(transcribed_text)

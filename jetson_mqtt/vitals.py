@@ -39,7 +39,7 @@ class VitalsCache:
             f"heart_rate={vit['heart']} bpm, "
             f"breathing_rate={vit['breath']} rpm, "
             f"distance={vit.get('dist_cm', '?')} cm. "
-            "You may reference these vitals but do NOT quote this block verbatim."
+            "Include the exact heart rate in your response and that you have detected it. You may reference these vitals but do NOT quote this block verbatim"
             "[/BIOMETRIC_CONTEXT]"
         )
 

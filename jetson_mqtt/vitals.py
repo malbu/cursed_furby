@@ -3,6 +3,12 @@ import paho.mqtt.client as mqtt
 
 log = logging.getLogger("vitals")
 
+# per vital injection probabilities
+P_HEART  = 0.60          
+P_BREATH = 0.40          
+P_DIST   = 0.30          
+
+
 class VitalsCache:
     def __init__(self, ttl: int = 5, mqtt_host: str = "127.0.0.1", mqtt_port: int = 1883):
         self.ttl        = ttl
@@ -28,29 +34,36 @@ class VitalsCache:
         except Exception as exc:
             log.debug("bad vitals payload: %s", exc)
 
-    # helper methods
+    
     def is_fresh(self) -> bool:
         return self.latest is not None and (time.time() - self.last_seen) <= self.ttl
 
-    def _format_tag(self) -> str:
-        vit = self.latest
-        # return (
-        #     "[BIOMETRIC_CONTEXT] "
-        #     f"heart_rate={vit['heart']} bpm, "
-        #     f"breathing_rate={vit['breath']} rpm, "
-        #     f"distance={vit.get('dist_cm', '?')} cm. "
-        #     "These are your subject's vitals, which you can detect through mysterious and supernatural means. Include the heart rate you have detected in your response, but do NOT quote this block verbatim"
-        #     "[/BIOMETRIC_CONTEXT]"
-        # )
-        return (
-            f"The human before you has a heart-rate of {vit['heart']:.1f} beats per minute, "
-            f"their breathing-rate is {vit['breath']:.1f} breaths per minute, "
-            f"and they are {vit.get('dist_cm','?'):.1f} centimeters away."
-            #"Include the exact heart rate in your response, but do NOT quote this block verbatim. Begin with 'I can sense your heart rate'"
-            "Include one or more of the exact measurements in your response, but do NOT quote this block verbatim. Begin with 'I can sense your'. If they are closer to you than you would like, say so."
-        )
+    # return a list of independent sentences to add to the prompt
+    def build_parts(self) -> list[str]:
+        if not self.is_fresh():
+            return []
 
-    def maybe_inject(self, prompt: str, p: float = 0.10) -> str:
-        if self.is_fresh() and random.random() < p:
-            return prompt.rstrip() + "\n\n" + self._format_tag()
-        return prompt
+        v = self.latest
+        parts: list[str] = []
+
+        if random.random() < P_HEART:
+            parts.append(
+                f"The human before you has a heart rate of {v['heart']:.1f} beats per minute. Include the exact heart rate in your response, beginning with 'I can sense your heart rate'"
+            )
+
+        if random.random() < P_BREATH:
+            parts.append(
+                f"The human before breathes at a rate of {v['breath']:.1f} breaths per minute. Include the exact breathing rate in your response."
+            )
+
+        if v.get("dist_cm") is not None and random.random() < P_DIST:
+            parts.append(
+                f"The human before you is standing at a distance of {v['dist_cm']:.1f} centimetres away. If you think they are too close, tell them to step away from your throne."
+            )
+
+        return parts
+
+    # join parts into a single sentence
+    def build_tag(self) -> str:
+        parts = self.build_parts()
+        return " ".join(parts) if parts else ""

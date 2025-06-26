@@ -319,9 +319,7 @@ def main():
                 record_audio(tmpfile.name)
                 
                 raw   = transcribe_audio(tmpfile.name).strip()
-                biometrics = ""
-                if VITALS.is_fresh() and random.random() < 0.50:
-                    biometrics = VITALS._format_tag()
+                biometrics = VITALS.build_tag()      # new per-vital tag
                 transcribed_text = raw
 
                 print(f"Furby heard: {raw}")
@@ -329,12 +327,16 @@ def main():
                 # LLM call
                 if transcribed_text:
                     if USE_EMBEDDINGS:
-                        response = rag_ask(transcribed_text,
-                                           biometrics=biometrics)
+                        response = rag_ask(
+                            transcribed_text,
+                            biometrics=biometrics
+                        )
                     else:
-                        response = ask_llama(transcribed_text,
-                                             context="",
-                                             biometrics=biometrics)
+                        response = ask_llama(
+                            transcribed_text,
+                            context="",
+                            biometrics=biometrics
+                        )
                     print(f"Furby says: {response}")
                     text_to_speech(response)
         except KeyboardInterrupt:

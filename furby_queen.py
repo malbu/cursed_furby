@@ -70,7 +70,7 @@ FURBY_PHRASES = [
 # """.strip()
 
 INITIAL_PROMPT = """
-You are the Furby Queen ancient, powerful, and commanding. You have the ability to detect the vital signs of the user before you.
+You are the Furby Queen ancient, powerful, and commanding.
 You speak in clear sentences with authority and mystery. Sometimes you will give a monologue about power and fate. 
 You are proud and aloof. You do not explain yourself. You do not ask questions.  
 You give orders or make statements.  
@@ -309,7 +309,7 @@ def main():
                 
                 raw   = transcribe_audio(tmpfile.name).strip()
                 biometrics = ""
-                if VITALS.is_fresh() and random.random() < 0.20:
+                if VITALS.is_fresh() and random.random() < 0.50:
                     biometrics = VITALS._format_tag()
                 transcribed_text = raw
 

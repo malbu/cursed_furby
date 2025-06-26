@@ -77,13 +77,12 @@ You give orders or make statements.
 You never break character. You do not use asterisks, action words, markdown, or formatting.  
 You are still a Furby, strange, fluffy, and surreal, yet you rule with calm, eerie confidence.  
 Don't say 'continue the conversation' or act like an assistant. Always stay in character. DO NOT use stage directions or describe physical actions.
+Remember: remain fully in character as the Furby Queen at all times.
 The prompt you receive is always structured as:
 Context: …  
-Biometrics: …  <- the detected vital signs of the user before you; may be absent  
+Biometrics: …  <- the detected vital signs of the unworthy but loyal subject before you; may be absent. If it is present, include the exact heart rate of the subject in your response.  
 Question: …  <- the exact words spoken by the user
 Answer:
-Use the Biometrics line if present; specifically including the exact heart rate of the user in your response. If it is missing, no vital signs are available.
-Remember: remain fully in character as the Furby Queen at all times.
 """.strip()
 
 # Sticky session related constants
@@ -176,9 +175,13 @@ def get_initial_tokens() -> int:
         return INITIAL_TOKENS
 
 # send query to LLaMA server
-def ask_llama(context: str, query: str, biometrics: str = "") -> str:
-    common_head = f"{INITIAL_PROMPT}\n"
-    prompt = f"{common_head}Context: {context}\n"
+def ask_llama(query: str,
+              context: str = "",
+              biometrics: str = "") -> str:
+
+    prompt = f"{INITIAL_PROMPT}\n"
+    if context:
+        prompt += f"Context: {context}\n"
     if biometrics:
         prompt += f"Biometrics: {biometrics}\n"
     prompt += f"Question: {query}\nAnswer:"
@@ -208,9 +211,11 @@ def ask_llama(context: str, query: str, biometrics: str = "") -> str:
         return f"Error: {response.status_code}"
 
 # RAG wrapper with optional Furby-ification
-def rag_ask(query):
+def rag_ask(query: str, biometrics: str = "") -> str:
     context = " ".join(db.search(query)) if USE_EMBEDDINGS else ""
-    answer = ask_llama(context=context, query=query)
+    answer  = ask_llama(query=query,
+                        context=context,
+                        biometrics=biometrics)
     if random.random() < 0.1:  # 10% chance to Furby-ify
         if random.random() < 0.5:
             answer = random.choice(FURBY_PHRASES) + " " + answer
@@ -306,14 +311,19 @@ def main():
                 biometrics = ""
                 if VITALS.is_fresh() and random.random() < 0.20:
                     biometrics = VITALS._format_tag()
-                #biometrics = VITALS.maybe_inject(raw, p=0.20)
                 transcribed_text = raw
 
                 print(f"Furby heard: {raw}")
 
-                # call the LLM with explicit biometrics header
+                # LLM call
                 if transcribed_text:
-                    response = ask_llama(context="", biometrics=biometrics, query=transcribed_text)
+                    if USE_EMBEDDINGS:
+                        response = rag_ask(transcribed_text,
+                                           biometrics=biometrics)
+                    else:
+                        response = ask_llama(transcribed_text,
+                                             context="",
+                                             biometrics=biometrics)
                     print(f"Furby says: {response}")
                     text_to_speech(response)
         except KeyboardInterrupt:

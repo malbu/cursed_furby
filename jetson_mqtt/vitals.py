@@ -43,9 +43,10 @@ class VitalsCache:
         #     "[/BIOMETRIC_CONTEXT]"
         # )
         return (
-            f"Your subjects heart-rate is {vit['heart']:.1f} bpm, "
+            f"The human before you has a heart-rate of {vit['heart']:.1f} bpm, "
             f"their breathing-rate is {vit['breath']:.1f} rpm, "
             f"and they are {vit.get('dist_cm','?'):.1f} cm away."
+            "Include the exact heart rate in your response, but do NOT quote this block verbatim"
         )
 
     def maybe_inject(self, prompt: str, p: float = 0.10) -> str:

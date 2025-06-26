@@ -46,7 +46,8 @@ class VitalsCache:
             f"The human before you has a heart-rate of {vit['heart']:.1f} beats per minute, "
             f"their breathing-rate is {vit['breath']:.1f} breaths per minute, "
             f"and they are {vit.get('dist_cm','?'):.1f} centimeters away."
-            "Include the exact heart rate in your response, but do NOT quote this block verbatim. Begin with 'I can sense your heart rate'"
+            #"Include the exact heart rate in your response, but do NOT quote this block verbatim. Begin with 'I can sense your heart rate'"
+            "Include one or more of the exact measurements in your response, but do NOT quote this block verbatim. Begin with 'I can sense your'. If they are closer to you than you would like, say so."
         )
 
     def maybe_inject(self, prompt: str, p: float = 0.10) -> str:

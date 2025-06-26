@@ -34,13 +34,18 @@ class VitalsCache:
 
     def _format_tag(self) -> str:
         vit = self.latest
+        # return (
+        #     "[BIOMETRIC_CONTEXT] "
+        #     f"heart_rate={vit['heart']} bpm, "
+        #     f"breathing_rate={vit['breath']} rpm, "
+        #     f"distance={vit.get('dist_cm', '?')} cm. "
+        #     "These are your subject's vitals, which you can detect through mysterious and supernatural means. Include the heart rate you have detected in your response, but do NOT quote this block verbatim"
+        #     "[/BIOMETRIC_CONTEXT]"
+        # )
         return (
-            "[BIOMETRIC_CONTEXT] "
-            f"heart_rate={vit['heart']} bpm, "
-            f"breathing_rate={vit['breath']} rpm, "
-            f"distance={vit.get('dist_cm', '?')} cm. "
-            "These are your subject's vitals, which you can detect through mysterious and supernatural means. Include the heart rate you have detected in your response, but do NOT quote this block verbatim"
-            "[/BIOMETRIC_CONTEXT]"
+            f"Your subjects heart-rate is {vit['heart']:.1f} bpm, "
+            f"their breathing-rate is {vit['breath']:.1f} rpm, "
+            f"and they are {vit.get('dist_cm','?'):.1f} cm away."
         )
 
     def maybe_inject(self, prompt: str, p: float = 0.10) -> str:

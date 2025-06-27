@@ -369,7 +369,11 @@ async def idle_watcher():
             continue
 
         biometrics = VITALS.build_tag()            # per-vital gates intact
-        # always send a prompt, even if biometrics is empty
+        if not biometrics:
+            # nothing useful to say; restart the idle timer
+            LAST_ACTIVITY = time.time()
+            continue
+
         reply = await asyncio.to_thread(
             ask_llama,
             "",               # no user words
@@ -386,12 +390,13 @@ if __name__ == "__main__":
         print("Furby cannot speak without its brain (llama-server)!")
         exit(1)
     try:
-        asyncio.run(
-            asyncio.gather(
+        async def _runner():
+            await asyncio.gather(
                 main_loop(),
                 idle_watcher(),
             )
-        )
+
+        asyncio.run(_runner())
     finally:
         print("Shutting down llama-server...")
         llama_proc.terminate()

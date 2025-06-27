@@ -150,6 +150,11 @@ def find_device(device_name_substring):
 
 # record
 def record_audio(filename, duration=RECORD_DURATION, fs=SAMPLE_RATE):
+    """Record audio to *filename* but wait if TTS is active."""
+    # pause recording if loudspeaker currently playing
+    while TTS_ACTIVE.is_set():
+        time.sleep(0.1)
+
     sd.default.device = find_device(INPUT_DEVICE_NAME_SUBSTRING)
     print("Recording...")
     audio = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='int16')
@@ -235,31 +240,26 @@ def rag_ask(query: str, biometrics: str = "") -> str:
     return answer
 
 # convert text to speech using Furby Piper voice
-def text_to_speech(text):
-    """
-    synthesize speech and keep the beak motor moving only
-    while audible sound leaves the speaker
+async def text_to_speech(text: str):
+    """Synthesize and play speech while setting TTS_ACTIVE flag."""
 
-    enter motor_context() after the first PCM buffer is queued,
-        eliminating the variable buffering delay that `aplay` introduced
-    """
+   
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as wav_tmp:
-        
         piper_cmd = [
             "/home/malbu/piper/build/piper",
             "--model", FURBY_MODEL,
             "--output_file", wav_tmp.name,
         ]
-        # feed text via stdin
-        subprocess.run(piper_cmd, input=text.encode(), check=True)
+        # run Piper in blocking subprocess
+        await asyncio.to_thread(subprocess.run, piper_cmd, input=text.encode(), check=True)
+        wav_path = wav_tmp.name
 
     
-    wave_obj = sa.WaveObject.from_wave_file(wav_tmp.name)
-
-    #  publish motor cues via MQTT to Jetson
-    with motor_context():                 # "start" published inside
-        play_obj = wave_obj.play()        # first buffer queued now
-        play_obj.wait_done()              # block until playback ends
+    TTS_ACTIVE.set()                # block microphone while speaker active
+    try:
+        await asyncio.to_thread(os.system, f"aplay -q {wav_path}")
+    finally:
+        TTS_ACTIVE.clear()
 
 def start_llama_server():
     llama_binary = "/home/malbu/llama.cpp/build/bin/llama-server"
@@ -319,6 +319,9 @@ IDLE_SECS = 30            # seconds of microphone silence before Furby pings
 LAST_ACTIVITY = time.time()
 
 
+FIRST_TURN_DONE = False              # set after the 1st user/LLM round
+TTS_ACTIVE      = asyncio.Event()    # true while loudspeaker is playing
+TTS_ACTIVE.clear()
 
 async def main_loop():
     """Existing conversation loop (records, transcribes, replies)."""
@@ -350,8 +353,9 @@ async def main_loop():
                             biometrics,
                         )
                     print(f"Furby says: {response}")
-                    await asyncio.to_thread(text_to_speech, response)
-                    LAST_ACTIVITY = time.time()       # ⟵ reset idle timer
+                    await text_to_speech(response)
+                    LAST_ACTIVITY = time.time()       # reset idle timer
+                    FIRST_TURN_DONE = True
         except KeyboardInterrupt:
             print("\nFurby says bye bye!")
             break
@@ -374,14 +378,13 @@ async def idle_watcher():
             LAST_ACTIVITY = time.time()
             continue
 
-        reply = await asyncio.to_thread(
-            ask_llama,
-            "",               # no user words
-            "",
-            biometrics,
+        reply = ask_llama(
+            query="",               # no user words
+            context="",
+            biometrics=biometrics,
         )
         print("Idle ping:", reply)
-        await asyncio.to_thread(text_to_speech, reply)
+        await text_to_speech(reply)
         LAST_ACTIVITY = time.time()                # reset timer
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 from llama_cpp import Llama
 import os, json, itertools
-
+#script to find tokens to add to logit_bias in furby_queen.py; to penalize markdown formatting and prevent feeding it into voice model
 model_path = os.path.expanduser("~/llama.cpp/models/gemma-2-2b-it-Q4_K_S.gguf")
 llm = Llama(model_path=model_path, n_ctx=32, n_threads=2)
 
@@ -15,8 +15,8 @@ for word in bad_words:
     ids = llm.tokenize(word.encode(), add_bos=False)
     token_ids.update(ids)
 
-# Show unique IDs nicely sorted
+# Show unique IDs sorted
 print(sorted(token_ids))
 
-# Dump JSON you can paste straight into logit_bias
+# Dump JSON to paste into logit_bias
 print(json.dumps({str(i): -1000 for i in sorted(token_ids)}, indent=2))

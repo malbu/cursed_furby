@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# integrated into furby_queen.py
 # start llama-server on 127.0.0.1:5000
 
 MODEL_PATH="../models/gemma-2-2b-it-Q4_K_S.gguf"

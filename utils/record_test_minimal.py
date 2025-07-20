@@ -3,8 +3,7 @@
 minimal capture script using Respeaker
 capture ONE mono channel at 16 kHz
 no AGC / AEC / noise suppression
-Usage:
-    python record_furby_style.py  out.wav  [duration_seconds]
+used to test the ReSpeaker 4-Mic array and compare to dsp version of the script
 """
 import sounddevice as sd
 import soundfile as sf
@@ -16,7 +15,7 @@ OUTFILE  = sys.argv[1] if len(sys.argv) > 1 else "furby_style.wav"
 
 
 def find_respeaker() -> int:
-    """Return device index of the first input with 'ReSpeaker' in its name."""
+    """Return device index of the first input with 'ReSpeaker' in its name"""
     for idx, dev in enumerate(sd.query_devices()):
         if dev["max_input_channels"] > 0 and "ReSpeaker" in dev["name"]:
             return idx

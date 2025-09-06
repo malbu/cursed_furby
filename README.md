@@ -1,4 +1,4 @@
-#  Cursed Furby – Jetson-powered Animatronic Art Exhibit
+#  Cursed Furby
 
 > _All hail the long Furby_
 
@@ -11,17 +11,23 @@
 </p>
 
 
-
+<p align="center">
+  <a href="https://youtube.com/shorts/c62zUxYeev4">
+    <img src="https://img.youtube.com/vi/c62zUxYeev4/maxresdefault.jpg" alt="Cursed Furby demo video" width="100%">
+  </a>
+</p>
 
 ---
 
-The Furby Queen was part of the Cursed Odditree, an animatronic art installation created by HA and MA and displayed at the 2025 Firefly Arts Festival and 2025 FIGMENT Boston. 
+The Furby Queen was part of the Cursed Odditree, an animatronic art installation created by HA and MA. Shown at Firefly Arts Festival 2025 and FIGMENT 2025.
+
+
 
 Read below on how to create your own version, which involves: building the LLM stack, including **Retrieval-Augmented Generation (RAG)**, training your own voice model, and deploying everything on Jetson hardware. It is compatible with the latest *Jetson Orin Nano Super Dev Kit*.
 
 ## 1  Overview
-Cursed Furby is an experimental animatronic toy that combines
-* **Real-time speech recognition** (Whisper) and **LLM dialog** (llama.cpp) on an NVIDIA Jetson Orin Nano,
+Cursed Furby combines
+* **Real-time speech recognition** (Whisper) and **Local LLM dialog** (llama.cpp) on an NVIDIA Jetson Orin Nano,
 * **Expressive speech synthesis** (Piper) with a custom-trained Furby voice (see voice_piper_finetune),
 * **Biometric sensing** (MR60BHA2 radar) and **motor control** handled by a Raspberry Pi Zero W, and
 * **MQTT messaging** to glue everything together

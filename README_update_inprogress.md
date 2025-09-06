@@ -1,6 +1,6 @@
 #  Cursed Furby – Jetson-powered Animatronic Art Exhibit
 
-> _A talking, mildly ominous Furby Queen brought back to life with edge AI, and biometric sensors._
+> _Bow before the Furby Queen_
 
 ![Happy Tree Furby](./happy_tree_furby.png)
 
@@ -16,7 +16,7 @@ Cursed Furby is an experimental animatronic toy that combines
 * **Biometric sensing** (MR60BHA2 radar) and **motor control** handled by a Raspberry Pi Zero W, and
 * **MQTT messaging** to glue everything together
 
-The result is a fluffy creature that listens, thinks, and responds while its beak moves in sync with the audio—and even reacts to your heart-rate and distance.
+The result is a long fluffy mildly ominous Furby Queen that listens and responds and even reacts to your heart/breathing rate, and distance.
 
 ## 2  Hardware Bill of Materials
 | Qty | Part | Purpose |

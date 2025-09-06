@@ -10,7 +10,7 @@
   <img src="./furby_build.jpeg" alt="" width="49%">
 </p>
 
-
+### Demo video: The Furby Queen responds to puny mortal: 
 <p align="center">
   <a href="https://youtube.com/shorts/c62zUxYeev4">
     <img src="https://img.youtube.com/vi/c62zUxYeev4/maxresdefault.jpg" alt="Cursed Furby demo video" width="100%">

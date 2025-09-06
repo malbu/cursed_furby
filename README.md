@@ -137,7 +137,6 @@ Logs are available with `journalctl -u the_furby -f` and `journalctl -u pi_mqtt 
 
 ## 9  Development Tips
 * `USE_EMBEDDINGS` can be toggled in `furby_queen.py` to enable RAG via sentence-transformers.
-* The beak motor is started **exactly** when the first audio buffer is en-queued to Piper—see `motor_context()`.
 * Edit `jetson_mqtt/vitals.py` probabilities to make the Queen mention biometrics more or less often.
 
 ---

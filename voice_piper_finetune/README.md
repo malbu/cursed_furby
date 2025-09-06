@@ -1,6 +1,6 @@
 # Furby Voice Fine-Tuning with Piper TTS: Complete Guide
 
-This guide walks you step-by-step through how to install Piper, prepare a dataset, fine-tune a new voice model (Furby in this case), and generate speech with it. This assumes you're using **Ubuntu 22.04**, have Python 3.10 or 3.11, and are familiar with basic Linux and Python usage.
+This guide walks you step-by-step through how to install Piper, prepare a dataset, fine-tune a new voice model (Furby in this case), and generate speech with it. This assumes you're using **Ubuntu 22.04**, have Python 3.10 or 3.11.
 
 ---
 

@@ -1,11 +1,21 @@
 #  Cursed Furby – Jetson-powered Animatronic Art Exhibit
 
-> _Bow before the Furby Queen_
+> _All hail the long Furby_
 
 ![Happy Tree Furby](./long_furby.JPG)
 
 
+<p align="center">
+  <img src="./furby_closeup.JPG" alt="Furby Queen close-up" width="49%">
+  <img src="./furby_build.jpeg" alt="" width="49%">
+</p>
+
+
+
+
 ---
+
+The Furby Queen was part of the Cursed Odditree, an animatronic art installation created by HA and MA and displayed at the 2025 Firefly Arts Festival and 2025 FIGMENT Boston. 
 
 Read below on how to create your own version, which involves: building the LLM stack, including **Retrieval-Augmented Generation (RAG)**, training your own voice model, and deploying everything on Jetson hardware. It is compatible with the latest *Jetson Orin Nano Super Dev Kit*.
 

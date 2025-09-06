@@ -23,7 +23,7 @@ The Furby Queen was part of the Cursed Odditree, an animatronic art installation
 
 
 
-Read below on how to create your own version, which involves: building the LLM stack, including **Retrieval-Augmented Generation (RAG)**, training your own voice model, and deploying everything on Jetson hardware. It is compatible with the latest *Jetson Orin Nano Super Dev Kit*.
+Read below on how to create your own version, which involves: building the local LLM stack, including **Retrieval-Augmented Generation (RAG)**, training your own voice model, and deploying everything on Jetson hardware. It is compatible with the latest *Jetson Orin Nano Super Dev Kit*.
 
 ## 1  Overview
 Cursed Furby combines

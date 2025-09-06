@@ -3,14 +3,14 @@
 import os
 import subprocess
 
-# === Configure ===
+
 input_dir = "./FurbSounds"
 output_dir = "./furb_sounds_normalized"
 
-# === Ensure output dir exists ===
+
 os.makedirs(output_dir, exist_ok=True)
 
-# === Process each .wav ===
+
 for filename in sorted(os.listdir(input_dir)):
     if filename.lower().endswith(".wav"):
         in_path = os.path.join(input_dir, filename)
